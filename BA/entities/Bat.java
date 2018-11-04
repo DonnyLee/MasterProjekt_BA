@@ -4,21 +4,23 @@ import java.util.ArrayList;
 
 public class Bat {
 	private ArrayList<Integer> p;
-	private float v;
-	private float A;
-	private float r;
+	private double v;
+	private double A;
+	private double r;
 	
 	public Bat() {
 		this.p = new ArrayList<Integer>();
 		this.v = 0.f;
 		A = 0.f;
 		this.r = 0.f;
+
 	}
 
-	public Bat(float v, float a, float r) {
-		
+	public Bat(int startPosition, double a, double r) {
+
 		this.p = new ArrayList<Integer>();
-		this.v = v;
+		this.addPosition(startPosition);
+		this.v = 0.f;
 		A = a;
 		this.r = r;
 	}
@@ -27,7 +29,9 @@ public class Bat {
 		return p;
 	}
 
-	public float getV() {
+	public void addPosition(int p){ this.p.add(p);}
+
+	public double getV() {
 		return v;
 	}
 
@@ -35,7 +39,7 @@ public class Bat {
 		this.v = v;
 	}
 
-	public float getA() {
+	public double getA() {
 		return A;
 	}
 
@@ -43,14 +47,18 @@ public class Bat {
 		A = a;
 	}
 
-	public float getR() {
+	public double getR() {
 		return r;
 	}
 
 	public void setR(float r) {
 		this.r = r;
 	}
-	
+
+	@Override
+	public String toString(){
+		return p.toString()+", velocity="+v+", loudness="+A+", pulse="+r;
+	}
 	
 	
 
