@@ -40,6 +40,11 @@ private  static final double PULSEMISSION=0.7;
 					t.setV(1);
 				}
 				System.out.println(t.toString());
+				if(t.getV()<set.getSize()/2){
+				    //2-opt
+                }else{
+				    // 3- opt
+                }
 			}
 
 		}
@@ -58,7 +63,7 @@ private  static final double PULSEMISSION=0.7;
 	private static int hemmingDistanz(ArrayList route, ArrayList bestRoute){
 		int counter =0;
 		for(int i=0;i<bestRoute.size();i++){
-			if(route.get(i)==bestRoute.get(i))
+			if(route.get(i)!=bestRoute.get(i))
 				counter++;
 		}
 		return counter;
