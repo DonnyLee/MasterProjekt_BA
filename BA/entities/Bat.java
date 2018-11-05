@@ -35,7 +35,7 @@ public class Bat {
 		return v;
 	}
 
-	public void setV(float v) {
+	public void setV(double v) {
 		this.v = v;
 	}
 
