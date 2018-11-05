@@ -1,9 +1,10 @@
 package entities;
 
 import java.util.ArrayList;
+import com.hsh.Evaluable;
 
-public class Bat {
-	private ArrayList<Integer> p;
+public class Bat extends Evaluable{
+    private ArrayList<Integer> p;
 	private double v;
 	private double A;
 	private double r;
@@ -16,20 +17,20 @@ public class Bat {
 
 	}
 
-	public Bat(int startPosition, double a, double r) {
+	public Bat(ArrayList<Integer> startSolution, double a, double r) {
 
-		this.p = new ArrayList<Integer>();
-		this.addPosition(startPosition);
+		this.p = new ArrayList<>(startSolution);
 		this.v = 0.f;
 		A = a;
 		this.r = r;
 	}
-	
-	public ArrayList<Integer> getP() {
+
+	@Override
+	public ArrayList<Integer> getPath() {
 		return p;
 	}
 
-	public void addPosition(int p){ this.p.add(p);}
+	//public void addPosition(int p){ this.p.add(p);}
 
 	public double getV() {
 		return v;
@@ -57,8 +58,16 @@ public class Bat {
 
 	@Override
 	public String toString(){
-		return p.toString()+", velocity="+v+", loudness="+A+", pulse="+r;
+		return p.toString() +", velocity="+v+", loudness="+A+", pulse="+r;
 	}
+
+	public String toString(boolean no){
+	    if(no) {
+	        return toString();
+        }else{
+	        return "velocity="+v+", loudness="+A+", pulse="+r;
+        }
+    }
 	
 	
 
