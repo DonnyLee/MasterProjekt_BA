@@ -17,12 +17,12 @@ public class Bat extends Evaluable{
 
 	}
 
-	public Bat(ArrayList<Integer> startSolution, double a, double r) {
+	public Bat(ArrayList<Integer> startSolution, double a) {
 
 		this.p = new ArrayList<>(startSolution);
-		this.v = 0.f;
+		this.v = 0.0;
 		A = a;
-		this.r = r;
+		this.r = 0.4;
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class Bat extends Evaluable{
 		return A;
 	}
 
-	public void setA(float a) {
+	public void setA(double a) {
 		A = a;
 	}
 
@@ -52,7 +52,7 @@ public class Bat extends Evaluable{
 		return r;
 	}
 
-	public void setR(float r) {
+	public void setR(double r) {
 		this.r = r;
 	}
 
