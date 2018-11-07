@@ -2,7 +2,6 @@ package algorithm;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -58,8 +57,9 @@ private  static final double PULSEMISSION=0.7;
 				if(b.getV()<set.getSize()/2){
 				       twoOptHeursistc(b.getPath(),b.getV(),fitness,i);
                 }else{
-				   // System.out.println("Nothing to Do!!!");
-                    //TODO Implementation of 3-opt
+                    threeOptHeuristic(b.getPath(),fitness); //b.getPath(): route of current bat. // fitness: help class for calculate distance
+                    //TODO: Test
+
                 }
                 if(random.nextDouble()>b.getR()){
                     //System.out.println("Search for better Solution");
@@ -90,7 +90,7 @@ private  static final double PULSEMISSION=0.7;
         }
         //System.out.println(allCityNodes.toString());
 		for(int i=0;i<SWARM_SIZE;i++){
-            //TODO Implementation of better inital Solutions
+            //TODO Implementation of better initial Solutions
             shuffleArray(allCityNodes);
             //System.out.println(allCityNodes.toString());
 			swarm.add(new Bat(allCityNodes,LOUDNESS));
@@ -162,6 +162,70 @@ private  static final double PULSEMISSION=0.7;
             }
         }
     }
+
+    private static void threeOptHeuristic(ArrayList<Integer> route, Fitness fit) {
+	    //source : https://community.oracle.com/thread/1798133?db=5
+	    //TODO
+        int route_size = route.size();
+	    float route_distance = fit.distance(route.get(0), route.get(route_size-1));
+        int id_city_a;
+        int id_city_b;
+        int id_city_c;
+        int[] distances = new int[6]; // six nodes or city is a segment
+        for (int a = 0 ; a < route_size ; a++) {
+            int b = a+1;
+            if (b >= route_size) {  // if b exceed current route size.
+                b = 0;
+            }
+            int c = b+1;
+            if (c >= route_size) {  // if b exceed current route size.
+                c = 0;
+            }
+            id_city_a = route.get(a);
+            id_city_b = route.get(b);
+            id_city_c = route.get(c);
+
+            distances[0] = fit.distance(id_city_a, id_city_b) + fit.distance(id_city_b, id_city_c);
+            distances[1] = fit.distance(id_city_a, id_city_c) + fit.distance(id_city_c, id_city_b);
+            distances[2] = fit.distance(id_city_b, id_city_a) + fit.distance(id_city_a, id_city_c);
+            distances[3] = fit.distance(id_city_b, id_city_c) + fit.distance(id_city_c, id_city_a);
+            distances[4] = fit.distance(id_city_c, id_city_a) + fit.distance(id_city_a, id_city_b);
+            distances[5] = fit.distance(id_city_c, id_city_b) + fit.distance(id_city_b, id_city_a);
+
+            //find index of shortest distance from distances:int[6]...
+            int minIndex = 0;
+            for (int i = 0; i < 6 ; i++) {
+                if (distances[i] < distances[minIndex]) minIndex = i;
+            }
+
+            //swap cities after case
+            switch(minIndex) {
+                case 0: //no change, route may be optimal from beginning...
+                    break;
+                case 1: // from ABC to ABC, swap b and c
+                    Collections.swap(route, b, c);
+                    break;
+                case 2: // from ABC to BAC, swap a and b
+                    Collections.swap(route, a, b);
+                    break;
+                case 3: // from ABC to BCA, swap a and c then c and b
+                    Collections.swap(route, a, c);
+                    Collections.swap(route, c, b);
+                    break;
+                case 4: // from ABC to CAB, swap a and c then b and a
+                    Collections.swap(route, a, c);
+                    Collections.swap(route, b, a);
+                    break;
+                case 5: // from ABC to CBA, swap a and c
+                    Collections.swap(route, a, c);
+                    break;
+            }
+
+
+
+        }
+    }
+
     private static int[] swapCities(ArrayList<Integer> route,int x, int y){
 	   int[] newRoute = new int[route.size()];
         for (int i = 0; i <= x-1; i++) {
