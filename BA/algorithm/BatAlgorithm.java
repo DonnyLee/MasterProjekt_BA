@@ -165,26 +165,24 @@ private  static final double PULSEMISSION=0.7;
 
     private static void threeOptHeuristic(ArrayList<Integer> route, Fitness fit) {
 	    //source : https://community.oracle.com/thread/1798133?db=5
-	    //TODO
-        int route_size = route.size();
-	    float route_distance = fit.distance(route.get(0), route.get(route_size-1));
-        int id_city_a;
+	    int route_size = route.size();
+	    int id_city_a;
         int id_city_b;
         int id_city_c;
         int[] distances = new int[6]; // six nodes or city is a segment
         for (int a = 0 ; a < route_size ; a++) {
             int b = a+1;
-            if (b >= route_size) {  // if b exceed current route size.
-                b = 0;
-            }
+            if (b >= route_size) b = 0;    // if b exceed current route size.
+
             int c = b+1;
-            if (c >= route_size) {  // if b exceed current route size.
-                c = 0;
-            }
+            if (c >= route_size) c = 0;    // if b exceed current route size.
+
+            //city ids are redefined here
             id_city_a = route.get(a);
             id_city_b = route.get(b);
             id_city_c = route.get(c);
 
+            //distance are summed into this int[6] array in following sequence...
             distances[0] = fit.distance(id_city_a, id_city_b) + fit.distance(id_city_b, id_city_c);
             distances[1] = fit.distance(id_city_a, id_city_c) + fit.distance(id_city_c, id_city_b);
             distances[2] = fit.distance(id_city_b, id_city_a) + fit.distance(id_city_a, id_city_c);
@@ -220,9 +218,6 @@ private  static final double PULSEMISSION=0.7;
                     Collections.swap(route, a, c);
                     break;
             }
-
-
-
         }
     }
 
