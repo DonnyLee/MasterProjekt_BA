@@ -58,16 +58,19 @@ public class Bat extends Evaluable{
 
 	@Override
 	public String toString(){
-		return p.toString() +", velocity="+v+", loudness="+A+", pulse="+r;
+		return p.toString() +" ,fitness="+this.getFitness()+" ,velocity="+v+", loudness="+A+", pulse="+r;
 	}
 
 	public String toString(boolean no){
 	    if(no) {
 	        return toString();
         }else{
-	        return "velocity="+v+", loudness="+A+", pulse="+r;
+	        return "fitness="+this.getFitness()+" ,velocity="+v+", loudness="+A+", pulse="+r;
         }
     }
+
+
+
 	
 	
 

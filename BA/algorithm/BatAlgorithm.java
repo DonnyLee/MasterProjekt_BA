@@ -1,9 +1,8 @@
 package algorithm;
 
+import java.awt.List;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.hsh.Evaluable;
@@ -22,7 +21,6 @@ private  static final double PULSEMISSION=0.7;
 		// TODO Auto-generated method stub
 		  try {
 			Dataset dataset = readDataSet(args[0]);
-
 			ArrayList<Evaluable> batSwarm =new ArrayList<>();
 			initalBatSwarm(batSwarm,dataset);
 			iterationsBatAlgoritm(batSwarm,dataset);
@@ -37,14 +35,17 @@ private  static final double PULSEMISSION=0.7;
 		//ArrayList<Integer> bestRoute = new ArrayList<Integer>();
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
+
         Fitness fitness = new Fitness(set);
 		fitness.evaluate(swarm);
 
+        sortSwarm(swarm);
+
        Evaluable bestBat=fitness.getAbsolutBest();
 
-        //System.out.println(bestRoute.toString());
-		for(int i=1;i<=10;i++){
-          
+
+		for(int i=1;i<=280;i++){
+
 			for(Evaluable t: swarm){
 			    Bat b = (Bat) t;
 				int hemming = hemmingDistanz(b.getPath(),bestBat.getPath());
@@ -53,17 +54,17 @@ private  static final double PULSEMISSION=0.7;
 				}else{
 					b.setV(1);
 				}
-				//System.out.println(b.toString(true));
-				if(b.getV()<set.getSize()/2){
-				       twoOptHeursistc(b.getPath(),b.getV(),fitness,i);
-                }else{
-                    threeOptHeuristic(b.getPath(),fitness); //b.getPath(): route of current bat. // fitness: help class for calculate distance
-                    //TODO: Test
+				runHeuristicForPosition(b,set.getSize()/2,i,fitness);
 
-                }
                 if(random.nextDouble()>b.getR()){
-                    //System.out.println("Search for better Solution");
-                    //TODO Implementation of loacl Search
+                   ArrayList<Integer> randomBest = swarm.get(random.nextInt(5)).getPath();
+                    hemming = hemmingDistanz(b.getPath(),randomBest);
+                    if(hemming!=0) {
+                        b.setV(random.nextInt(hemming) + 1);
+                    }else{
+                        b.setV(1);
+                    }
+                    runHeuristicForPosition(b,set.getSize()/2,i,fitness);
                 }
                 if(random.nextDouble(LOUDNESS)<b.getA() && fitness.evaluate(b,i).getFitness() < fitness.evaluate(bestBat,i).getFitness()){
                     b.setA(0.9*b.getA());
@@ -73,9 +74,11 @@ private  static final double PULSEMISSION=0.7;
                     System.out.println("Better Solution: "+b.toString(false));
                 }
 			}
-            fitness.evaluate(swarm);
 
-
+			fitness.evaluate(swarm);
+            sortSwarm(swarm);
+           // System.out.println(swarm.get(0).toString());
+           // System.out.println(swarm.get(49).toString());
 		}
 		//fitness.finish();
 	}
@@ -101,6 +104,24 @@ private  static final double PULSEMISSION=0.7;
         long seed = System.nanoTime();
         Collections.shuffle(ar,new Random(seed));
     }
+    private static void sortSwarm(ArrayList<Evaluable>swarm){
+        Collections.sort(swarm, new Comparator<Evaluable>() {
+            @Override
+            public int compare(Evaluable o1, Evaluable o2) {
+                return Integer.compare(o1.getFitness(),o2.getFitness());
+            }
+        });
+    }
+    public static void runHeuristicForPosition(Bat b, double n,int iterationBA,Fitness fitness){
+        if(b.getV()<n){
+            twoOptHeursistc(b.getPath(),b.getV(),fitness,iterationBA);
+        }else{
+            //b.getPath(): route of current bat. // fitness: help class for calculate distance
+            threeOptHeuristic(b.getPath(),fitness);
+
+            //TODO: Test
+        }
+    }
 
 
 	private static int hemmingDistanz(ArrayList<Integer> route, ArrayList<Integer> bestRoute){
@@ -111,28 +132,27 @@ private  static final double PULSEMISSION=0.7;
 		}
 		return counter;
 	}
-	private static void twoOptHeursistc(ArrayList<Integer> route,double iterations,Fitness fitness,int iterationBA) {
-        int swaps=0;
-         for(int i=0;i < iterations;i++){
 
+
+
+	private static void twoOptHeursistc(ArrayList<Integer> route,double iterations,Fitness fitness,int iterationBA) {
+        int iter=0;
+         do{
+            int swaps=0;
             for (int x = 1; x < route.size() - 2; x++) {
                 for (int y = x + 1; y < route.size() - 1; y++) {
 
                     //check distance of line A,B + line C,D against A,C + B,D
                     if ((fitness.distance(route.get(x), route.get(x - 1)) + fitness.distance(route.get(y + 1), route.get(y))) >=
                             (fitness.distance(route.get(x), route.get(y + 1)) + fitness.distance(route.get(x - 1), route.get(y)))) {
-
                         int[] arr = new int[route.size()];
                         for (int ij = 0; ij < route.size(); ij++)
                             arr[ij] = route.get(ij);
                         Evaluable evOrg = fitness.evaluate(arr, iterationBA);
-
                         int[] tmpRoute = swapCities(route,x,y);
                         Evaluable evTmp = fitness.evaluate(tmpRoute,iterationBA);
 
                         if(evTmp.isValid()) {
-
-
                             //System.out.println("Original Fitness: " + evOrg.getFitness() + " Swap Fitness: " + evTmp.getFitness());
                             if (evOrg.getFitness() > evTmp.getFitness()) {
 
@@ -140,11 +160,12 @@ private  static final double PULSEMISSION=0.7;
                                 //System.out.println(route.toString());
 
                                 route.clear();
+                                //route.addAll(tmpRoute);
                                 for (int ij = 0; ij < tmpRoute.length; ij++) {
-                                    //System.out.println(tmpRoute[ij]);
                                     route.add(tmpRoute[ij]);
                                 }
                                 swaps++;
+                                iter++;
                                 //System.out.println(route.toString());
                             }
                         }else{
@@ -157,10 +178,10 @@ private  static final double PULSEMISSION=0.7;
                 }
             }
             if(swaps==0){
-                //System.out.println("No swaps");
+                //System.out.println("Iterations"+ iter);
                 break;
             }
-        }
+        }while (iter<iterations);
     }
 
     private static void threeOptHeuristic(ArrayList<Integer> route, Fitness fit) {
@@ -213,6 +234,7 @@ private  static final double PULSEMISSION=0.7;
                 case 4: // from ABC to CAB, swap a and c then b and a
                     Collections.swap(route, a, c);
                     Collections.swap(route, b, a);
+
                     break;
                 case 5: // from ABC to CBA, swap a and c
                     Collections.swap(route, a, c);
