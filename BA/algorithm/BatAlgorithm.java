@@ -1,6 +1,5 @@
 package algorithm;
 
-import java.awt.List;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -15,15 +14,15 @@ import entities.Bat;
 public class BatAlgorithm {
 private  static final int SWARM_SIZE=50;
 private  static final double LOUDNESS=0.7;
-private  static final double PULSEMISSION=0.7;
+private  static final double PULSE_EMISSION =0.7;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		  try {
 			Dataset dataset = readDataSet(args[0]);
 			ArrayList<Evaluable> batSwarm =new ArrayList<>();
-			initalBatSwarm(batSwarm,dataset);
-			iterationsBatAlgoritm(batSwarm,dataset);
+			initialBatSwarm(batSwarm,dataset);
+			iterationsBatAlgorithm(batSwarm,dataset);
 
 			//dataset.getNodeByID(23).getId();
 		} catch (IOException e) {
@@ -31,7 +30,7 @@ private  static final double PULSEMISSION=0.7;
 			e.printStackTrace();
 		}
 	}
-	private static void iterationsBatAlgoritm(ArrayList<Evaluable> swarm, Dataset set){
+	private static void iterationsBatAlgorithm(ArrayList<Evaluable> swarm, Dataset set){
 		//ArrayList<Integer> bestRoute = new ArrayList<Integer>();
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
@@ -48,7 +47,7 @@ private  static final double PULSEMISSION=0.7;
 
 			for(Evaluable t: swarm){
 			    Bat b = (Bat) t;
-				int hemming = hemmingDistanz(b.getPath(),bestBat.getPath());
+				int hemming = hemmingDistance(b.getPath(),bestBat.getPath());
 				if(hemming!=0) {
                         b.setV(random.nextInt(hemming) + 1);
 				}else{
@@ -58,7 +57,7 @@ private  static final double PULSEMISSION=0.7;
 
                 if(random.nextDouble()>b.getR()){
                    ArrayList<Integer> randomBest = swarm.get(random.nextInt(5)).getPath();
-                    hemming = hemmingDistanz(b.getPath(),randomBest);
+                    hemming = hemmingDistance(b.getPath(),randomBest);
                     if(hemming!=0) {
                         b.setV(random.nextInt(hemming) + 1);
                     }else{
@@ -68,7 +67,7 @@ private  static final double PULSEMISSION=0.7;
                 }
                 if(random.nextDouble(LOUDNESS)<b.getA() && fitness.evaluate(b,i).getFitness() < fitness.evaluate(bestBat,i).getFitness()){
                     b.setA(0.9*b.getA());
-                    b.setR(PULSEMISSION*(1-Math.exp(-0.9*i+1)));
+                    b.setR(PULSE_EMISSION *(1-Math.exp(-0.9*i+1)));
                     bestBat =  fitness.evaluate(b,i);
                     System.out.println(fitness.evaluate(b,i).getFitness());
                     System.out.println("Better Solution: "+b.toString(false));
@@ -86,7 +85,7 @@ private  static final double PULSEMISSION=0.7;
 	private static Dataset readDataSet(String pathToTestData) throws IOException {
 		return Parser.read(pathToTestData);
 	}
-	private static void initalBatSwarm(ArrayList<Evaluable> swarm, Dataset set) {
+	private static void initialBatSwarm(ArrayList<Evaluable> swarm, Dataset set) {
 	    ArrayList<Integer> allCityNodes = new ArrayList<>();
 		for(Node n:set.getNodes()){
 		    allCityNodes.add(n.getId());
@@ -114,7 +113,7 @@ private  static final double PULSEMISSION=0.7;
     }
     public static void runHeuristicForPosition(Bat b, double n,int iterationBA,Fitness fitness){
         if(b.getV()<n){
-            twoOptHeursistc(b.getPath(),b.getV(),fitness,iterationBA);
+            twoOptHeuristic(b.getPath(),b.getV(),fitness,iterationBA);
         }else{
             //b.getPath(): route of current bat. // fitness: help class for calculate distance
             threeOptHeuristic(b.getPath(),fitness);
@@ -124,7 +123,7 @@ private  static final double PULSEMISSION=0.7;
     }
 
 
-	private static int hemmingDistanz(ArrayList<Integer> route, ArrayList<Integer> bestRoute){
+	private static int hemmingDistance(ArrayList<Integer> route, ArrayList<Integer> bestRoute){
 		int counter =0;
 		for(int i=0;i<bestRoute.size();i++){
 			if(route.get(i)!=bestRoute.get(i))
@@ -135,7 +134,7 @@ private  static final double PULSEMISSION=0.7;
 
 
 
-	private static void twoOptHeursistc(ArrayList<Integer> route,double iterations,Fitness fitness,int iterationBA) {
+	private static void twoOptHeuristic(ArrayList<Integer> route, double iterations, Fitness fitness, int iterationBA) {
         int iter=0;
          do{
             int swaps=0;
