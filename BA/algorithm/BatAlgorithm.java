@@ -12,13 +12,13 @@ import com.hsh.parser.Parser;
 import entities.Bat;
 
 public class BatAlgorithm {
-private  static final int SWARM_SIZE=55;
-private  static final double LOUDNESS=0.9;
+private  static final int SWARM_SIZE=50;
+private  static final double LOUDNESS=0.99;
 private  static final double PULSE_EMISSION =0.8;
-private  static final double THRESHOLD =0.15;
+private  static final double THRESHOLD =0.05;
 //Alpha for decreasing Loudness for best Solution in iteration
 private  static final double ALPHA =0.95;
-private  static final double GAMMA =0.7;
+private  static final double GAMMA =0.9;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -26,7 +26,7 @@ private  static final double GAMMA =0.7;
 			Dataset dataset = readDataSet(args[0]);
 			ArrayList<Evaluable> batSwarm =new ArrayList<>();
 
-			initalBatSwarm(batSwarm,dataset);
+			initialBatSwarm(batSwarm,dataset);
               long start = System.currentTimeMillis();
 			iterationsBatAlgorithm(batSwarm,dataset);
               long stop = System.currentTimeMillis();
@@ -64,7 +64,7 @@ private  static final double GAMMA =0.7;
                     } else {
                         b.setV(1);
                     }
-                    runHeuristicForPosition(b, set.getSize() / 2, i, fitness);
+                    runHeuristicForPosition(b, set.getSize() / 2.0, i, fitness);       // n/2.0 is optimization
 
                     if (random.nextDouble() > b.getR()) {
                         ArrayList<Integer> randomBest = swarm.get(random.nextInt(5)).getPath();
@@ -74,7 +74,7 @@ private  static final double GAMMA =0.7;
                         } else {
                             b.setV(1);
                         }
-                        runHeuristicForPosition(b, set.getSize() / 2, i, fitness);
+                        runHeuristicForPosition(b, set.getSize() / 2.0, i, fitness);     // n/2.0 is optimization
                     }
                 }
                 if(random.nextDouble(LOUDNESS)<b.getA() && fitness.evaluate(b,i).getFitness() <= fitness.evaluate(bestBat,i).getFitness()){
@@ -102,7 +102,7 @@ private  static final double GAMMA =0.7;
 	private static Dataset readDataSet(String pathToTestData) throws IOException {
 		return Parser.read(pathToTestData);
 	}
-	private static void initalBatSwarm(ArrayList<Evaluable> swarm, Dataset set) {
+	private static void initialBatSwarm(ArrayList<Evaluable> swarm, Dataset set) {
 	    ArrayList<Integer> allCityNodes = new ArrayList<>();
 		for(Node n:set.getNodes()){
 		    allCityNodes.add(n.getId());
@@ -154,7 +154,7 @@ private  static final double GAMMA =0.7;
 
 
 	private static void twoOptHeuristic(ArrayList<Integer> route, double iterations, Fitness fitness, int iterationBA) {
-        int iter=0;
+	    int iter=0;
         int overall=0;
         int swaps=0;
         ArrayList<Evaluable> bestWays =new ArrayList<>();
