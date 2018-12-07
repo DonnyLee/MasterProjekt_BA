@@ -8,13 +8,14 @@ public class Bat extends Evaluable{
 	private double v;
 	private double A;
 	private double r;
+	private boolean best;
 	
 	public Bat() {
 		this.p = new ArrayList<Integer>();
 		this.v = 0.f;
 		A = 0.f;
 		this.r = 0.f;
-
+		this.best=false;
 	}
 
 	public Bat(ArrayList<Integer> startSolution, double a) {
@@ -22,8 +23,11 @@ public class Bat extends Evaluable{
 		this.p = new ArrayList<>(startSolution);
 		this.v = 0.0;
 		A = a;
-		this.r = 0.4;
+		this.r = 0.2;
+		this.best=false;
 	}
+
+
 
 	@Override
 	public ArrayList<Integer> getPath() {
@@ -54,6 +58,14 @@ public class Bat extends Evaluable{
 
 	public void setR(double r) {
 		this.r = r;
+	}
+
+	public boolean isBest() {
+		return best;
+	}
+
+	public void setBest(boolean best) {
+		this.best = best;
 	}
 
 	@Override
