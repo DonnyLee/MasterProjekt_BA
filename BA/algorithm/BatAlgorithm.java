@@ -17,8 +17,8 @@ private  static final double LOUDNESS=0.99;
 private  static final double PULSE_EMISSION =0.8;
 private  static final double THRESHOLD =0.05;
 //Alpha for decreasing Loudness for best Solution in iteration
-private  static final double ALPHA =0.95;
-private  static final double GAMMA =0.9;
+private  static final double ALPHA =0.98;
+private  static final double GAMMA =0.98;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -53,11 +53,10 @@ private  static final double GAMMA =0.9;
        //Iteration Counter
         int i=1;
         //double bestLoudness=LOUDNESS;
-		do{
-
-			for(Evaluable t: swarm){
-			    Bat b = (Bat) t;
-                if(!bestBa.equals(b)) {
+		do {
+            for (Evaluable t : swarm) {
+                Bat b = (Bat) t;
+                if (!bestBa.equals(b)) {
                     int hemming = hemmingDistanz(b.getPath(), bestBat.getPath());
                     if (hemming != 0) {
                         b.setV(random.nextInt(hemming) + 1);
@@ -67,7 +66,10 @@ private  static final double GAMMA =0.9;
                     runHeuristicForPosition(b, set.getSize() / 2.0, i, fitness);       // n/2.0 is optimization
 
                     if (random.nextDouble() > b.getR()) {
-                        ArrayList<Integer> randomBest = swarm.get(random.nextInt(5)).getPath();
+                        int topSolutionOf = 5;
+                        //Select one solution among the best Ones
+                        ArrayList<Integer> randomBest = swarm.get(random.nextInt(topSolutionOf)).getPath();
+
                         hemming = hemmingDistanz(b.getPath(), randomBest);
                         if (hemming != 0) {
                             b.setV(random.nextInt(hemming) + 1);
@@ -77,25 +79,25 @@ private  static final double GAMMA =0.9;
                         runHeuristicForPosition(b, set.getSize() / 2.0, i, fitness);     // n/2.0 is optimization
                     }
                 }
-                if(random.nextDouble(LOUDNESS)<b.getA() && fitness.evaluate(b,i).getFitness() <= fitness.evaluate(bestBat,i).getFitness()){
-                    b.setA(ALPHA*b.getA());
-                    b.setR(PULSE_EMISSION *(1-Math.exp(-GAMMA*i)));
-                    bestBat =  fitness.evaluate(b,i);
+                if (random.nextDouble(LOUDNESS) < b.getA() && fitness.evaluate(b, i).getFitness() <= fitness.evaluate(bestBat, i).getFitness()) {
+                    b.setA(ALPHA * b.getA());
+                    b.setR(PULSE_EMISSION * (1 - Math.exp(-GAMMA * i)));
+                    bestBat = fitness.evaluate(b, i);
                     //bestLoudness=b.getA();
-                    bestBa=b;
-                    System.out.println(fitness.evaluate(b,i).getFitness());
-                    System.out.println("Better Solution: "+b.toString(false));
+                    bestBa = b;
+                    //System.out.println(fitness.evaluate(b, i).getFitness());
+                    System.out.println("Better Solution: " + b.toString(false));
                 }
-			}
+            }
 
-			fitness.evaluate(swarm);
+            fitness.evaluate(swarm);
             sortSwarm(swarm);
             //System.out.println(swarm.get(0).toString());
             //System.out.println(swarm.get(1).toString());
             //System.out.println(swarm.get(2).toString());
             i++;
-
-		}while(bestBa.getA()>= THRESHOLD && bestBa.getR()< PULSE_EMISSION);
+        }while(true);
+//		}while(bestBa.getA()>= THRESHOLD && bestBa.getR()< PULSE_EMISSION);
 		//fitness.finish();
 	}
 	
@@ -112,7 +114,7 @@ private  static final double GAMMA =0.9;
             //TODO Implementation of better initial Solutions
             shuffleArray(allCityNodes);
             //System.out.println(allCityNodes.toString());
-			swarm.add(new Bat(allCityNodes,LOUDNESS));
+			swarm.add(new Bat(allCityNodes));
 		}
 	}
     private static void shuffleArray(ArrayList<Integer> ar)
