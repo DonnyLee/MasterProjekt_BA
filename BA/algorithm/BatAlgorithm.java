@@ -16,6 +16,9 @@ private  static final int SWARM_SIZE=55;
 private  static final double LOUDNESS=0.9;
 private  static final double PULSE_EMISSION =0.8;
 private  static final double THRESHOLD =0.15;
+//Alpha for decreasing Loudness for best Solution in iteration
+private  static final double ALPHA =0.95;
+private  static final double GAMMA =0.7;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -40,6 +43,7 @@ private  static final double THRESHOLD =0.15;
 
 
         Fitness fitness = new Fitness(set);
+
 		fitness.evaluate(swarm);
 
         sortSwarm(swarm);
@@ -74,8 +78,8 @@ private  static final double THRESHOLD =0.15;
                     }
                 }
                 if(random.nextDouble(LOUDNESS)<b.getA() && fitness.evaluate(b,i).getFitness() <= fitness.evaluate(bestBat,i).getFitness()){
-                    b.setA(0.95*b.getA());
-                    b.setR(PULSE_EMISSION *(1-Math.exp(-0.7*i)));
+                    b.setA(ALPHA*b.getA());
+                    b.setR(PULSE_EMISSION *(1-Math.exp(-GAMMA*i)));
                     bestBat =  fitness.evaluate(b,i);
                     //bestLoudness=b.getA();
                     bestBa=b;
