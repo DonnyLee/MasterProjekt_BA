@@ -1,6 +1,5 @@
 package algorithm;
 
-import java.awt.List;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -15,8 +14,8 @@ import entities.Bat;
 public class BatAlgorithm {
 private  static final int SWARM_SIZE=55;
 private  static final double LOUDNESS=0.9;
-private  static final double PULSEMISSION=0.8;
-private  static final double TRESHHOLD=0.15;
+private  static final double PULSE_EMISSION =0.8;
+private  static final double THRESHOLD =0.15;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -26,7 +25,7 @@ private  static final double TRESHHOLD=0.15;
 
 			initalBatSwarm(batSwarm,dataset);
               long start = System.currentTimeMillis();
-			iterationsBatAlgoritm(batSwarm,dataset);
+			iterationsBatAlgorithm(batSwarm,dataset);
               long stop = System.currentTimeMillis();
               System.out.println("BA finifhed after "+(stop-start)/1000+" s");
 			//dataset.getNodeByID(23).getId();
@@ -35,7 +34,7 @@ private  static final double TRESHHOLD=0.15;
 			e.printStackTrace();
 		}
 	}
-	private static void iterationsBatAlgoritm(ArrayList<Evaluable> swarm, Dataset set){
+	private static void iterationsBatAlgorithm(ArrayList<Evaluable> swarm, Dataset set){
 		//ArrayList<Integer> bestRoute = new ArrayList<Integer>();
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
@@ -76,7 +75,7 @@ private  static final double TRESHHOLD=0.15;
                 }
                 if(random.nextDouble(LOUDNESS)<b.getA() && fitness.evaluate(b,i).getFitness() <= fitness.evaluate(bestBat,i).getFitness()){
                     b.setA(0.95*b.getA());
-                    b.setR(PULSEMISSION*(1-Math.exp(-0.7*i)));
+                    b.setR(PULSE_EMISSION *(1-Math.exp(-0.7*i)));
                     bestBat =  fitness.evaluate(b,i);
                     //bestLoudness=b.getA();
                     bestBa=b;
@@ -92,7 +91,7 @@ private  static final double TRESHHOLD=0.15;
             //System.out.println(swarm.get(2).toString());
             i++;
 
-		}while(bestBa.getA()>=TRESHHOLD && bestBa.getR()<PULSEMISSION);
+		}while(bestBa.getA()>= THRESHOLD && bestBa.getR()< PULSE_EMISSION);
 		//fitness.finish();
 	}
 	
@@ -128,7 +127,7 @@ private  static final double TRESHHOLD=0.15;
 
     private static void runHeuristicForPosition(Bat b, double n,int iterationBA,Fitness fitness){
         if(b.getV()<n){
-            twoOptHeursistc(b.getPath(),b.getV(),fitness,iterationBA);
+            twoOptHeuristic(b.getPath(),b.getV(),fitness,iterationBA);
         }else{
             //b.getPath(): route of current bat. // fitness: help class for calculate distance
 
@@ -150,7 +149,7 @@ private  static final double TRESHHOLD=0.15;
 
 
 
-	private static void twoOptHeursistc(ArrayList<Integer> route,double iterations,Fitness fitness,int iterationBA) {
+	private static void twoOptHeuristic(ArrayList<Integer> route, double iterations, Fitness fitness, int iterationBA) {
         int iter=0;
         int overall=0;
         int swaps=0;
