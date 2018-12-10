@@ -13,12 +13,13 @@ import entities.Bat;
 
 public class BatAlgorithm {
 private  static final int SWARM_SIZE=50;
-private  static final double LOUDNESS=0.99;
-private  static final double PULSE_EMISSION =0.8;
+private  static final double LOUDNESS=0.9;
+private  static final double PULSE_EMISSION =0.9;
 private  static final double THRESHOLD =0.05;
 //Alpha for decreasing Loudness for best Solution in iteration
-private  static final double ALPHA =0.98;
-private  static final double GAMMA =0.98;
+private  static final double ALPHA =0.8;
+private  static final double GAMMA =0.75;
+private static final Random rand = new Random();
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -40,65 +41,73 @@ private  static final double GAMMA =0.98;
 	private static void iterationsBatAlgorithm(ArrayList<Evaluable> swarm, Dataset set){
 		//ArrayList<Integer> bestRoute = new ArrayList<Integer>();
         ThreadLocalRandom random = ThreadLocalRandom.current();
-
-
         Fitness fitness = new Fitness(set);
-
-		fitness.evaluate(swarm);
-
+        fitness.evaluate(swarm);
         sortSwarm(swarm);
 
-       Evaluable bestBat=fitness.getAbsolutBest();
-        Bat bestBa=new Bat();
-       //Iteration Counter
+        //A random bat is picked as best Bat.
+        Evaluable bestSwarmFitness=fitness.getAbsolutBest();
+
+        Bat bestBat=new Bat();
+
+        //Iteration Counter
         int i=1;
-        //double bestLoudness=LOUDNESS;
-		do {
+        do {
+            //begin Algorithm
+            //for each bat in the population do...
             for (Evaluable t : swarm) {
                 Bat b = (Bat) t;
-                if (!bestBa.equals(b)) {
-                    int hemming = hemmingDistanz(b.getPath(), bestBat.getPath());
+
+                //Generate new solution...
+                int hemming = hemmingDistanz(b.getPath(), bestSwarmFitness.getPath());
+                //hemming is count of all different element of current bat route and best route
+                if (hemming != 0) {
+                    //when there is/are any different between two route...
+                    //set velocity of a bat to random distance of [1, hemming]
+                    b.setV(random.nextInt(hemming) + 1);
+                } else {
+                    //A flying bat cannot stop, even if it found current best solution
+                    //It's velocity minimum is 1, an indicator that bat never stop flying.
+                    b.setV(1);
+                }
+
+                //according to their velocity set new route
+                newHeuristicSolution(b, set.getSize(), i, fitness);
+
+
+                if (random.nextDouble() > b.getR()) {
+                    int topSolutionOf = 3;
+                    //This number must be higher then swarm size otherwise can cause indexOutOfBoundException.
+                    //Select one solution among the best Ones
+                    ArrayList<Integer> randomBest = swarm.get(random.nextInt(topSolutionOf)).getPath();
+
+                    hemming = hemmingDistanz(b.getPath(), randomBest);
                     if (hemming != 0) {
                         b.setV(random.nextInt(hemming) + 1);
                     } else {
                         b.setV(1);
                     }
-                    runHeuristicForPosition(b, set.getSize() / 2.0, i, fitness);       // n/2.0 is optimization
-
-                    if (random.nextDouble() > b.getR()) {
-                        int topSolutionOf = 5;
-                        //Select one solution among the best Ones
-                        ArrayList<Integer> randomBest = swarm.get(random.nextInt(topSolutionOf)).getPath();
-
-                        hemming = hemmingDistanz(b.getPath(), randomBest);
-                        if (hemming != 0) {
-                            b.setV(random.nextInt(hemming) + 1);
-                        } else {
-                            b.setV(1);
-                        }
-                        runHeuristicForPosition(b, set.getSize() / 2.0, i, fitness);     // n/2.0 is optimization
-                    }
+                    newHeuristicSolution(b, set.getSize(), i, fitness);
+                    //every bat b are closing into random solution route
                 }
-                if (random.nextDouble(LOUDNESS) < b.getA() && fitness.evaluate(b, i).getFitness() <= fitness.evaluate(bestBat, i).getFitness()) {
+
+                if (random.nextDouble(LOUDNESS) < b.getA() && fitness.evaluate(b, i).getFitness() < fitness.evaluate(bestSwarmFitness, i).getFitness()) {
+                    bestSwarmFitness = fitness.evaluate(b, i);
                     b.setA(ALPHA * b.getA());
                     b.setR(PULSE_EMISSION * (1 - Math.exp(-GAMMA * i)));
-                    bestBat = fitness.evaluate(b, i);
-                    //bestLoudness=b.getA();
-                    bestBa = b;
+                    bestBat = b;
                     //System.out.println(fitness.evaluate(b, i).getFitness());
-                    System.out.println("Better Solution: " + b.toString(false));
+                    //System.out.println("     " + b.toString(false));
                 }
             }
-
             fitness.evaluate(swarm);
             sortSwarm(swarm);
-            //System.out.println(swarm.get(0).toString());
-            //System.out.println(swarm.get(1).toString());
-            //System.out.println(swarm.get(2).toString());
             i++;
-        }while(true);
-//		}while(bestBa.getA()>= THRESHOLD && bestBa.getR()< PULSE_EMISSION);
-		//fitness.finish();
+            //}while(bestBat.getA()>= THRESHOLD && bestBat.getR()< PULSE_EMISSION);
+            //}while(bestBat.getR()< PULSE_EMISSION);
+        }while(bestBat.getR()< PULSE_EMISSION);
+
+            //fitness.finish();
 	}
 	
 	private static Dataset readDataSet(String pathToTestData) throws IOException {
@@ -131,15 +140,19 @@ private  static final double GAMMA =0.98;
         });
     }
 
-    private static void runHeuristicForPosition(Bat b, double n,int iterationBA,Fitness fitness){
-        if(b.getV()<n){
+    private static void newHeuristicSolution(Bat b, double n, int iterationBA, Fitness fitness){
+        // b each bat
+        // n number of Nodes
+        // i iteration
+        // f current fitness
+        if(b.getV()<n/2.0){
+            //If the bat b is closer to global best
+            //In this case bat b have to search in the solution space
             twoOptHeuristic(b.getPath(),b.getV(),fitness,iterationBA);
         }else{
-            //b.getPath(): route of current bat. // fitness: help class for calculate distance
+            //If the bat b is presumably far away from global best or even from the swarm
+            threeOptHeuristic(b.getPath(),fitness);
 
-            threeOptHeuristic(b.getPath(),fitness,b.getV());
-
-            //TODO: Test
         }
     }
 
@@ -228,78 +241,86 @@ private  static final double GAMMA =0.98;
           // System.out.println("2-opt executions: "+overall+ " with 0 swaps for "+iter+" IterationsS"  );
     }
 
-    private static void threeOptHeuristic(ArrayList<Integer> route, Fitness fit,double iterations) {
-        int iter = 0;
+    private static void threeOptHeuristic(ArrayList<Integer> route, Fitness fit) {
         int route_size = route.size();
         int id_city_a;
         int id_city_b;
         int id_city_c;
         int[] distances = new int[6]; // six nodes or city is a segment
-        do {
-            int swaps=0;
-            for (int a = 0; a < route_size; a++) {
-                int b = a + 1;
-                if (b >= route_size) b = 0;    // if b exceed current route size.
 
-                int c = b + 1;
-                if (c >= route_size) c = 0;    // if b exceed current route size.
+        for (int a = 0; a < route_size; a++) {
+            int b = a + 1;
+            if (b >= route_size) b = 0;    // if b exceed current route size.
 
-                //city ids are redefined here
-                id_city_a = route.get(a);
-                id_city_b = route.get(b);
-                id_city_c = route.get(c);
+            int c = b + 1;
+            if (c >= route_size) c = 0;    // if b exceed current route size.
 
-                //distance are summed into this int[6] array in following sequence...
-                distances[0] = fit.distance(id_city_a, id_city_b) + fit.distance(id_city_b, id_city_c);
-                distances[1] = fit.distance(id_city_a, id_city_c) + fit.distance(id_city_c, id_city_b);
-                distances[2] = fit.distance(id_city_b, id_city_a) + fit.distance(id_city_a, id_city_c);
-                distances[3] = fit.distance(id_city_b, id_city_c) + fit.distance(id_city_c, id_city_a);
-                distances[4] = fit.distance(id_city_c, id_city_a) + fit.distance(id_city_a, id_city_b);
-                distances[5] = fit.distance(id_city_c, id_city_b) + fit.distance(id_city_b, id_city_a);
+            //city ids are redefined here
+            id_city_a = route.get(a);
+            id_city_b = route.get(b);
+            id_city_c = route.get(c);
 
-                //find index of shortest distance from distances:int[6]...
-                int minIndex = 0;
-                for (int i = 0; i < 6; i++) {
-                    if (distances[i] < distances[minIndex]) minIndex = i;
-                }
 
-                //swap cities after case
-                switch (minIndex) {
-                    case 0: //no change, route may be optimal from beginning...
-                        break;
-                    case 1: // from ABC to ABC, swap b and c
-                        Collections.swap(route, b, c);
-                        iter++;
-                        swaps++;
-                        break;
-                    case 2: // from ABC to BAC, swap a and b
-                        Collections.swap(route, a, b);
-                        iter++;
-                        swaps++;
-                        break;
-                    case 3: // from ABC to BCA, swap a and c then c and b
-                        Collections.swap(route, a, c);
-                        Collections.swap(route, c, b);
-                        iter++;
-                        swaps++;
-                        break;
-                    case 4: // from ABC to CAB, swap a and c then b and a
-                        Collections.swap(route, a, c);
-                        Collections.swap(route, b, a);
-                        iter++;
-                        swaps++;
-                        break;
-                    case 5: // from ABC to CBA, swap a and c
-                        Collections.swap(route, a, c);
-                        iter++;
-                        swaps++;
-                        break;
-                }
+            //distance are summed into this int[6] array in following sequence...
+            //these 3 distance are for general tsp, a symmetrical edges
+            int ab = fit.distance(id_city_a, id_city_b);
+            int bc = fit.distance(id_city_b, id_city_c);
+            int ac = fit.distance(id_city_a, id_city_c);
+
+            //these 3 distance are for a-tsp and sop...
+            int ba = fit.distance(id_city_b, id_city_a);
+            int cb = fit.distance(id_city_c, id_city_b);
+            int ca = fit.distance(id_city_c, id_city_a);
+
+            distances[0] = ab + bc;
+            distances[1] = ac + cb;
+            distances[2] = ba + ac;
+            distances[3] = bc + ca;
+            distances[4] = ca + ab;
+            distances[5] = cb + ba;
+
+            //find index of shortest distance from distances:int[6]...
+            int minIndex = 0;
+            for (int i = 0; i < 6; i++) {
+                if (distances[i] < distances[minIndex]) minIndex = i;
             }
-            if(swaps==0)
-                break;
-        } while (iter < iterations);
-    }
+
+            //More random choices, required for symmetric tsp.
+            int swapCase = 0;
+            if (minIndex == 0) {
+                swapCase = rand.nextBoolean() ? 0:5;
+            } else if (minIndex == 1) {
+                swapCase = rand.nextBoolean() ? 1:3;
+            } else if (minIndex == 2) {
+                swapCase = rand.nextBoolean() ? 2:4;
+            }
+
+            //swap cities after case
+            switch (swapCase) {
+                case 0: //no change, route may be optimal from beginning...
+                    break;
+                case 1: // from ABC to ACB, swap b and c
+                    //like 2 opt.
+                    Collections.swap(route, b, c);
+                    break;
+                case 2: // from ABC to BAC, swap a and b
+                    //like 2 opt.
+                    Collections.swap(route, a, b);
+                    break;
+                case 3: // from ABC to BCA, swap a and c then c and b
+                    Collections.swap(route, a, c);
+                    Collections.swap(route, c, b);
+                    break;
+                case 4: // from ABC to CAB, swap a and c then b and a
+                    Collections.swap(route, a, c);
+                    Collections.swap(route, b, a);
+                    break;
+                case 5: // from ABC to CBA, swap a and c
+                    Collections.swap(route, a, c);
+                    break;
+            }
+        }
+	}
 
     private static int[] swapCities(ArrayList<Integer> route,int x, int y){
 	   int[] newRoute = new int[route.size()];
