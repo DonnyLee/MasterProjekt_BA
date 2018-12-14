@@ -1,9 +1,5 @@
 package algorithm;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-
 import com.hsh.Evaluable;
 import com.hsh.Fitness;
 import com.hsh.parser.Dataset;
@@ -11,51 +7,85 @@ import com.hsh.parser.Node;
 import com.hsh.parser.Parser;
 import entities.Bat;
 
-public class BatAlgorithm {
-private  static final int SWARM_SIZE=50;
-private  static final double LOUDNESS=0.98;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Random;
 
-//PULSE_EMISSION, 1 is when bat is same location as the target, 0.98 is pretty close to the target
-private  static final double PULSE_EMISSION =0.98;
-private  static final double THRESHOLD =0.05;
-//Alpha for decreasing Loudness for best Solution in iteration
-private  static final double ALPHA =0.9;
-//Gamma for increasing Pulse-Emission
-private  static final double GAMMA =0.9;
-private static final Random rand = new Random();
+public class BatAlgorithm_SOP {
+    private static final int SWARM_SIZE = 50;
+    private static final double LOUDNESS = 0.98;
+
+    //PULSE_EMISSION, 1 is when bat is same location as the target, 0.98 is pretty close to the target
+    private static final double PULSE_EMISSION = 0.98;
+    private static final double THRESHOLD = 0.05;
+    //Alpha for decreasing Loudness for best Solution in iteration
+    private static final double ALPHA = 0.9;
+    //Gamma for increasing Pulse-Emission
+    private static final double GAMMA = 0.9;
+    private static final Random rand = new Random();
 
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		  try {
-			Dataset dataset = readDataSet(args[0]);
-			ArrayList<Evaluable> batSwarm =new ArrayList<>();
+    public static void main(String[] args) {
+        // TODO Auto-generated method stub
+        try {
+            Dataset dataset = readDataSet(args[0]);
+            ArrayList<Evaluable> batSwarm = new ArrayList<>();
+            initialBatSwarm(batSwarm, dataset);
+            long start = System.currentTimeMillis();
 
-			initialBatSwarm(batSwarm,dataset);
-              long start = System.currentTimeMillis();
-			iterationsBatAlgorithm(batSwarm,dataset);
-              long stop = System.currentTimeMillis();
-              System.out.println("BA finifhed after "+(stop-start)/1000+" s");
-			//dataset.getNodeByID(23).getId();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	private static void iterationsBatAlgorithm(ArrayList<Evaluable> swarm, Dataset set){
-		//ArrayList<Integer> bestRoute = new ArrayList<Integer>();
-//        ThreadLocalRandom random = ThreadLocalRandom.current();
+            iterationsBatAlgorithm(batSwarm, dataset);
+            long stop = System.currentTimeMillis();
+            System.out.println("BA finifhed after " + (stop - start) / 1000 + " s");
+            //dataset.getNodeByID(23).getId();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    private static void initialBatSwarm(ArrayList<Evaluable> swarm, Dataset set) {
+        ArrayList<Integer> allCityNodes = new ArrayList<>();
+
+        for (Node n : set.getNodes()) {
+            allCityNodes.add(n.getId());
+        }
+        for (int i = 0; i < SWARM_SIZE; i++) {
+            swarm.add(new Bat(allCityNodes));
+        }
+    }
+
+    private static void iterationsBatAlgorithm(ArrayList<Evaluable> swarm, Dataset set) {
         Fitness fitness = new Fitness(set);
         fitness.evaluate(swarm);
         sortSwarm(swarm);
-
         //A random bat is picked as best Bat.
-        Evaluable bestSwarmFitness=fitness.getAbsolutBest();
-        int bestFitness = bestSwarmFitness.getFitness();
-        Bat bestBat = (Bat)swarm.get(rand.nextInt(SWARM_SIZE));
 
+        Bat bestBat;
+        Evaluable bestSwarmFitness;
+        int bestFitness;
+        int iteration = 1;
+        do {
+            for (Evaluable e : swarm) {
+                Bat bat = (Bat) e;
+
+                // Pre-process the route
+                // TODO not done yet
+                for (int i = 1; i <= bat.getPath().size()-1 ; i++) {
+                    System.out.println(bat.getPath());
+                    if (fitness.distance(bat.getPath().get(i), bat.getPath().get(i+1)) <=0) {
+                        System.out.println("invalid!"+ fitness.distance(bat.getPath().get(i), bat.getPath().get(i+1)));
+                    //    for (int k = 1; k <= bat.getPath().size()
+                    }
+                }
+            }
+            iteration++;
+        }while (iteration < 10);
+        //} while (bestBat.getR() < PULSE_EMISSION);
+        fitness.finish();
+/*
         //Iteration Counter
-        int i=1;
+        int i = 1;
         do {
             //begin Algorithm
             //for each bat in the population do...
@@ -64,8 +94,8 @@ private static final Random rand = new Random();
 
                 if (!b.isBest()) {  // One of the Optimization, the best bat is flying near best solution
                     //Generate new solution...
-                    int hemming = hemmingDistance(b.getPath(), bestSwarmFitness.getPath());
                     //hemming is count of all different element of current bat route and best route
+                    int hemming = hemmingDistance(b.getPath(), bestSwarmFitness.getPath());
                     if (hemming != 0) {
                         //when there is/are any different between two route...
                         //set velocity of a bat to random distance of [1, hemming]
@@ -115,40 +145,33 @@ private static final Random rand = new Random();
             sortSwarm(swarm);
             i++;
             //}while(bestBat.getA()>= THRESHOLD && bestBat.getR()< PULSE_EMISSION);
-        }while(bestBat.getR()< PULSE_EMISSION);
-        fitness.finish();
-	}
-
-	private static Dataset readDataSet(String pathToTestData) throws IOException {
-		return Parser.read(pathToTestData);
-	}
-	private static void initialBatSwarm(ArrayList<Evaluable> swarm, Dataset set) {
-	    ArrayList<Integer> allCityNodes = new ArrayList<>();
-		for(Node n:set.getNodes()){
-		    allCityNodes.add(n.getId());
-        }
-        for(int i=0;i<SWARM_SIZE;i++){
-            shuffleArray(allCityNodes);
-        	swarm.add(new Bat(allCityNodes));
-        }
-	}
-
-    private static void shuffleArray(ArrayList<Integer> ar)
-    {
-        long seed = System.nanoTime();
-        Collections.shuffle(ar,new Random(seed));
+        } while (bestBat.getR() < PULSE_EMISSION);
+        //fitness.finish();
+        */
     }
 
-    private static void sortSwarm(ArrayList<Evaluable>swarm){
+
+    private static void shuffleArray(ArrayList<Integer> ar) {
+        long seed = System.nanoTime();
+        Collections.shuffle(ar, new Random(seed));
+    }
+
+    private static void sortSwarm(ArrayList<Evaluable> swarm) {
         Collections.sort(swarm, new Comparator<Evaluable>() {
             @Override
             public int compare(Evaluable o1, Evaluable o2) {
-                return Integer.compare(o1.getFitness(),o2.getFitness());
+                return Integer.compare(o1.getFitness(), o2.getFitness());
             }
         });
     }
 
-    private static void newHeuristicSolution(Bat b, double n, int iterationBA, Fitness fitness){
+    private static Dataset readDataSet(String pathToTestData) throws IOException {
+        return Parser.read(pathToTestData);
+    }
+
+
+
+    private static void newHeuristicSolution(Bat b, double n, int iterationBA, Fitness fitness) {
         // b each bat
         // n number of Nodes
         // i iteration
@@ -157,22 +180,23 @@ private static final Random rand = new Random();
         if (b.getV() < n / 2.0) {
             //If the bat b is closer to global best
             //In this case bat b have to search in the solution space
-            twoOptHeuristic(b.getPath(), b.getV(), fitness, iterationBA);
+            threeOptHeuristic(b.getPath(), fitness);
+            //twoOptHeuristic(b.getPath(), b.getV(), fitness, iterationBA);
         } else {
             //If the bat b is presumably far away from global best or even from the swarm
             //threeOptHeuristic(b.getPath(),fitness);
             threeOptHeuristic(b.getPath(), fitness);
         }
-	}
+    }
 
 
-	private static int hemmingDistance(ArrayList<Integer> route, ArrayList<Integer> bestRoute){
-        int counter =0;
+    private static int hemmingDistance(ArrayList<Integer> route, ArrayList<Integer> bestRoute) {
+        int counter = 0;
 
         //here begins ruling operation exp.
         //[A,B,C,D] vs [D,C,A,B] to [A,B,C,D] vs [A,B,D,C]
         ArrayList<Integer> compare = new ArrayList<>(bestRoute);
-        for(int i = 0; i < route.size(); i++) {
+        for (int i = 0; i < route.size(); i++) {
             if (bestRoute.get(0) == route.get(i)) {
                 if (0 < i) {
                     compare.clear();
@@ -181,27 +205,27 @@ private static final Random rand = new Random();
                 }
             }
         }
-        for(int i=0;i<bestRoute.size();i++){
-			if(compare.get(i).equals(bestRoute.get(i))) {
+        for (int i = 0; i < bestRoute.size(); i++) {
+            if (compare.get(i).equals(bestRoute.get(i))) {
                 counter++;
             }
-		}
+        }
         return counter;
-	}
+    }
 
-	private static void twoOptHeuristic(ArrayList<Integer> route, double iterations, Fitness fitness, int iterationBA) {
-	    int iter=0;
-        int overall=0;
-        int swaps=0;
-        ArrayList<Evaluable> bestWays =new ArrayList<>();
+    private static void twoOptHeuristic(ArrayList<Integer> route, double iterations, Fitness fitness, int iterationBA) {
+        int iter = 0;
+        int overall = 0;
+        int swaps = 0;
+        ArrayList<Evaluable> bestWays = new ArrayList<>();
         ArrayList<Integer> tmp = new ArrayList<>(route);
-         do{
-             swaps=0;
-             overall++;
-             int[] arr = new int[route.size()];
-             for (int ij = 0; ij < route.size(); ij++)
-                 arr[ij] = route.get(ij);
-             Evaluable evOrg = fitness.evaluate(arr, iterationBA);
+        do {
+            swaps = 0;
+            overall++;
+            int[] arr = new int[route.size()];
+            for (int ij = 0; ij < route.size(); ij++)
+                arr[ij] = route.get(ij);
+            Evaluable evOrg = fitness.evaluate(arr, iterationBA);
 
             for (int x = 1; x < route.size() - 2; x++) {
                 for (int y = x + 1; y < route.size() - 1; y++) {
@@ -211,10 +235,10 @@ private static final Random rand = new Random();
                             (fitness.distance(route.get(x), route.get(y + 1)) + fitness.distance(route.get(x - 1), route.get(y)))) {
                         iter++;
 
-                        int[] tmpRoute = swapCities(route,x,y);
-                        Evaluable evTmp = fitness.evaluate(tmpRoute,iterationBA);
+                        int[] tmpRoute = swapCities(route, x, y);
+                        Evaluable evTmp = fitness.evaluate(tmpRoute, iterationBA);
 
-                        if(evTmp.isValid()) {
+                        if (evTmp.isValid()) {
                             //System.out.println("Original Fitness: " + evOrg.getFitness() + " Swap Fitness: " + evTmp.getFitness());
                             if (evOrg.getFitness() >= evTmp.getFitness()) {
 
@@ -224,10 +248,10 @@ private static final Random rand = new Random();
                                 route.clear();
                                 route.addAll(evTmp.getPath());
                                 //for (int ij = 0; ij < tmpRoute.length; ij++) {
-                                    //route.add(tmpRoute[ij]);
+                                //route.add(tmpRoute[ij]);
                                 //}
 
-                                if(evOrg.getFitness() > evTmp.getFitness()) {
+                                if (evOrg.getFitness() > evTmp.getFitness()) {
                                     swaps++;
                                     for (int ij = 0; ij < route.size(); ij++)
                                         arr[ij] = route.get(ij);
@@ -236,47 +260,48 @@ private static final Random rand = new Random();
                                 }
                                 //System.out.println(route.toString());
                             }
-                        }else{
+                        } else {
                             System.out.println("Not valid!!");
-                            System.out.println("Swap at: "+x+" and "+y);
-                            System.out.println("Original Path: "+evOrg.getPath());
-                            System.out.println("Temp Path: "+evTmp.getPath());
+                            System.out.println("Swap at: " + x + " and " + y);
+                            System.out.println("Original Path: " + evOrg.getPath());
+                            System.out.println("Temp Path: " + evTmp.getPath());
                         }
                     }
                 }
             }
-            if(swaps==0){
+            if (swaps == 0) {
                 //System.out.println("Iterations"+ iter);
                 break;
             }
             // bestFitness=evOrg.getFitness();
             //for(Evaluable e:bestWays){
-              //  if(bestFitness>=e.getFitness()){
-                //    bestFitness=e.getFitness();
-                 //   route.clear();
-                 //   route.addAll(e.getPath());
-              //  }
-        //    }
-        }while (iter<iterations);
-         //if(overall>=4)
-          // System.out.println("2-opt executions: "+overall+ " with 0 swaps for "+iter+" IterationsS"  );
+            //  if(bestFitness>=e.getFitness()){
+            //    bestFitness=e.getFitness();
+            //   route.clear();
+            //   route.addAll(e.getPath());
+            //  }
+            //    }
+        } while (iter < iterations);
+        //if(overall>=4)
+        // System.out.println("2-opt executions: "+overall+ " with 0 swaps for "+iter+" IterationsS"  );
     }
 
     private static void threeOptBeta(ArrayList<Integer> route, Fitness fit) {
-	    //TODO need more work
-	    int route_size = route.size();
+        //TODO need more work
+        int route_size = route.size();
         int id_city_a;
         int id_city_b;
         int id_city_c;
         int[] distances = new int[6]; // six nodes or city is a segment
         ArrayList<Integer> tempRoute = new ArrayList<>();
-        for (int a = 0; a < route_size ; a++) {
-            int b = a +1;
+        for (int a = 0; a < route_size; a++) {
+            int b = a + 1;
             if (b >= route_size) b = 0;
-            int c = b +1;
+            int c = b + 1;
             if (c >= route_size) c = 0;
         }
     }
+
     private static void threeOptHeuristic(ArrayList<Integer> route, Fitness fit) {
         int route_size = route.size();
         int id_city_p;
@@ -288,7 +313,7 @@ private static final Random rand = new Random();
 
         for (int a = 0; a < route_size; a++) {
             int p = a - 1;
-            if (p < 0 ) p = route_size-1;
+            if (p < 0) p = route_size - 1;
             int b = a + 1;
             if (b >= route_size) b = 0;    // if b exceed current route size.
 
@@ -325,12 +350,12 @@ private static final Random rand = new Random();
             int cb = fit.distance(id_city_c, id_city_b);
             int ca = fit.distance(id_city_c, id_city_a);
 
-            distances[0] = ab + bc ;
-            distances[1] = ac + cb ;
-            distances[2] = ba + ac ;
-            distances[3] = bc + ca ;
-            distances[4] = ca + ab ;
-            distances[5] = cb + ba ;
+            distances[0] = ab + bc;
+            distances[1] = ac + cb;
+            distances[2] = ba + ac;
+            distances[3] = bc + ca;
+            distances[4] = ca + ab;
+            distances[5] = cb + ba;
 
 
             //find index of shortest distance from distances:int[6]...
@@ -341,9 +366,9 @@ private static final Random rand = new Random();
                 }
             }
 
-            for (int j = 0; j < distances.length ; j++) {
+            for (int j = 0; j < distances.length; j++) {
                 if (distances[minIndex] == distances[j] && minIndex != j) {
-                    minIndex = rand.nextBoolean() ? minIndex:j;
+                    minIndex = rand.nextBoolean() ? minIndex : j;
 
                 }
             }
@@ -383,7 +408,7 @@ private static final Random rand = new Random();
                     break;
             }
         }
-	}
+    }
 	/*
 	private static void threeOptHeuristic(ArrayList<Integer> route, Fitness fit) {
         int route_size = route.size();
@@ -542,23 +567,23 @@ private static final Random rand = new Random();
         }
     }*/
 
-    private static int[] swapCities(ArrayList<Integer> route,int x, int y){
-	   int[] newRoute = new int[route.size()];
-        for (int i = 0; i <= x-1; i++) {
+    private static int[] swapCities(ArrayList<Integer> route, int x, int y) {
+        int[] newRoute = new int[route.size()];
+        for (int i = 0; i <= x - 1; i++) {
 
-            newRoute[i]=route.get(i);
+            newRoute[i] = route.get(i);
         }
 
-        int dec=0;
-        for (int i = x; i <= y; i++){
-            newRoute[i]=route.get(y-dec);
+        int dec = 0;
+        for (int i = x; i <= y; i++) {
+            newRoute[i] = route.get(y - dec);
             dec++;
         }
-        for (int i = y+1; i < route.size(); i++) {
-            newRoute[i]=route.get(i);
+        for (int i = y + 1; i < route.size(); i++) {
+            newRoute[i] = route.get(i);
         }
 
-        return  newRoute;
+        return newRoute;
     }
 
 }
