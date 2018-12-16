@@ -8,6 +8,7 @@ import com.hsh.parser.Parser;
 import entities.Bat;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,28 +62,81 @@ public class BatAlgorithm_SOP {
         sortSwarm(swarm);
         //A random bat is picked as best Bat.
 
-        Bat bestBat;
+        Bat bestBat = null;
         Evaluable bestSwarmFitness;
         int bestFitness;
+
         int iteration = 1;
         do {
             for (Evaluable e : swarm) {
-                Bat bat = (Bat) e;
-
                 // Pre-process the route
-                // TODO not done yet
-                for (int i = 1; i <= bat.getPath().size()-1 ; i++) {
-                    System.out.println(bat.getPath());
-                    if (fitness.distance(bat.getPath().get(i), bat.getPath().get(i+1)) <=0) {
-                        System.out.println("invalid!"+ fitness.distance(bat.getPath().get(i), bat.getPath().get(i+1)));
-                    //    for (int k = 1; k <= bat.getPath().size()
+                Bat bat = (Bat) e;
+                ArrayList<Integer> batPath = bat.getPath();
+                int pathSize = batPath.size();
+                ArrayList<Integer> validNode = new ArrayList<>(batPath);
+                for (int i = 0; i < pathSize - 1; i++) {    //from 1 to n-1, n is always the last node.
+
+                    validNode.remove(batPath.get(i));   //eliminate duplicate
+                    for (int j = 0; j < validNode.size(); j++) {
+                        int distance_i_to_j = -1;
+                        distance_i_to_j = fitness.distance(batPath.get(i), validNode.get(j));   //Cji.
+
+                        if (distance_i_to_j >= 0) {
+                            //valid route
+                          //  System.out.println("DEBUG:: "+ batPath.get(i)+" to "+ validNode.get(j) +" reachable distance of " + distance_i_to_j);
+                        } else {
+                            //System.out.println("DEBUG:: "+ batPath.get(i)+" to "+ validNode.get(j) +" not reachable distance of " + distance_i_to_k);
+                            if (validNode.size() > 0) {
+                                validNode.remove(j);    //if distance is -1
+                            }
+                        }
                     }
+                    if (validNode.size() <= 0) {
+
+                    } else {
+                        batPath.set(i+1, validNode.get(rand.nextInt(validNode.size())));
+                    }
+
+                    int[] validation = new int[batPath.size()];
+                    for (int v = 0; v < batPath.size(); v++) {
+                        validation[v] = batPath.get(v);
+                    }
+
+                    if (fitness.validate(validation).isValid()) {
+                        //System.out.println("valid route! ");
+                        if (bestBat == null) {
+                            bestBat = bat;
+                        }
+                        fitness.evaluate(bestBat, i);
+                        fitness.evaluate(bat, i).getFitness();
+                        sortSwarm(swarm);
+                        double randomA = 0 + (LOUDNESS - 0) * rand.nextDouble(); //random of [0, A]
+                        if (randomA < bat.getA() && fitness.evaluate(bat, i).getFitness() <= fitness.getBest(i).getFitness()) {
+                            if (fitness.evaluate(bat, i).getFitness() < fitness.getBest(i).getFitness()) {
+                                bestFitness = fitness.evaluate(bat, i).getFitness();
+                            }
+                            bat.setA(ALPHA * bat.getA());
+                            bat.setR(PULSE_EMISSION * (1 - Math.exp(-GAMMA * i)));
+                            bestBat = bat;
+                            //System.out.println(fitness.evaluate(b, i).getFitness());
+                            //System.out.println("     " + b.toString(false));
+                        }
+                    } else {
+                        int topSolutionOf = rand.nextInt(1);
+                        batPath = swarm.get(topSolutionOf).getPath();
+                    }
+
                 }
+
+                iteration++;
+                System.out.println(iteration);
             }
-            iteration++;
-        }while (iteration < 10);
-        //} while (bestBat.getR() < PULSE_EMISSION);
-        fitness.finish();
+            fitness.evaluate(swarm);
+        //} while (iteration  < 50 ) ;
+            } while (bestBat != null && bestBat.getR() < PULSE_EMISSION);
+            fitness.finish();
+        }
+
 /*
         //Iteration Counter
         int i = 1;
@@ -148,7 +202,7 @@ public class BatAlgorithm_SOP {
         } while (bestBat.getR() < PULSE_EMISSION);
         //fitness.finish();
         */
-    }
+
 
 
     private static void shuffleArray(ArrayList<Integer> ar) {
