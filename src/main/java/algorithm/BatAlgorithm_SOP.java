@@ -1,10 +1,10 @@
 package algorithm;
 
-import com.hsh.Evaluable;
-import com.hsh.Fitness;
-import com.hsh.parser.Dataset;
-import com.hsh.parser.Node;
-import com.hsh.parser.Parser;
+import fitness.Evaluable;
+import fitness.Fitness;
+import fitness.parser.Dataset;
+import fitness.parser.Node;
+import fitness.parser.Parser;
 import entities.Bat;
 
 import java.io.IOException;
