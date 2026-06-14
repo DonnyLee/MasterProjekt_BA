@@ -3,11 +3,11 @@ package algorithm;
 import java.io.IOException;
 import java.util.*;
 
-import com.hsh.Evaluable;
-import com.hsh.Fitness;
-import com.hsh.parser.Dataset;
-import com.hsh.parser.Node;
-import com.hsh.parser.Parser;
+import fitness.Evaluable;
+import fitness.Fitness;
+import fitness.parser.Dataset;
+import fitness.parser.Node;
+import fitness.parser.Parser;
 import entities.Bat;
 
 public class BatAlgorithm {
@@ -39,19 +39,12 @@ public class BatAlgorithm {
     // private static final double THRESHOLD = 0.05;
 
 
-    public static void main(String[] args) {
-        try {
-            Dataset dataset = readDataSet(args[0]);
-            ArrayList<Evaluable> batSwarm = new ArrayList<>();
+    public static void run(String filePath) throws IOException {
+        Dataset dataset = readDataSet(filePath);
+        ArrayList<Evaluable> batSwarm = new ArrayList<>();
 
-            initialBatSwarm(batSwarm, dataset);
-            long start = System.currentTimeMillis();
-            iterationsBatAlgorithm(batSwarm, dataset);
-            long stop = System.currentTimeMillis();
-            System.out.println("Bat Algorithm finished took " + (stop - start) / 1000 + " s");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        initialBatSwarm(batSwarm, dataset);
+        iterationsBatAlgorithm(batSwarm, dataset);
     }
 
     private static void iterationsBatAlgorithm(ArrayList<Evaluable> swarm, Dataset set) {

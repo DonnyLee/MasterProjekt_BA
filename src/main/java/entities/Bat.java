@@ -3,7 +3,7 @@ package entities;
 import java.util.ArrayList;
 import java.util.Random;
 
-import com.hsh.Evaluable;
+import fitness.Evaluable;
 
 public class Bat extends Evaluable{
     private ArrayList<Integer> p;
