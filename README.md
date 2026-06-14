@@ -22,7 +22,7 @@ Add the path of a `.tsp` file (e.g., `./testData/tsp/berlin52.tsp`) as program a
 ### Variant B: Maven Exec Plugin
 Run the program directly from your terminal using Maven:
 ```cmd
-mvn exec:java "-Dexec.args=TestData/<any .tsp file name>"
+mvn exec:java "-Dexec.args=testData/tsp/<any .tsp file name>"
 ```
 
 ### Variant C: Build and Run Runnable JAR
